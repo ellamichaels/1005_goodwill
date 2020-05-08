@@ -1,0 +1,51 @@
+---
+title: "goodwill"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rvest)
+library(RCurl)
+library(ggmap)
+
+
+```
+
+```{r}
+# I have my google maps api stored in my environment (Which you can do using the
+# usethis package. That's best practice- otherwise you could just type the key
+# directly here)
+
+register_google(key = "https://maps.googleapis.com/maps/api/js?key=AIzaSyAWdZs_-Pc1Yrog28O8_sicUi45vJiOZYk") 
+
+get_store_coords <- function(store_id){
+  store_url <- paste("https://www.goodwill.org/location/?store=", store_id, sep = "")
+  store <- read_html(store_url)
+  text <- store %>% html_nodes(".results")
+  text <- text[[1]] %>% html_text
+  
+  x <- str_split_fixed(text, "Details", 2)[2] # Get the second half of what comes after 
+  x <- str_split_fixed(x,"United",2)[1] # Stop at "United"
+  x <- str_split_fixed(x, boundary(type = c("line_break")), 6)[5]
+  x <- str_replace(x,pattern ="\\r\\n", "") # Get rid of other unnecessary characters
+  x
+}
+
+store_ids <- seq(1,4954, 1)
+test <- mapply(get_store_coords, store_ids[3700])
+
+test
+```
+
+
+```{r}
+coords <- geocode(x)
+  coords <- paste(coords$lon, ", ", coords$lat, sep = "")
+  return(coords)
+  
+  
+store_ids <- seq(1,4954, 1)
+test <- mapply(get_store_coords, store_ids[1:5])
+```

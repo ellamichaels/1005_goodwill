@@ -1,0 +1,29 @@
+---
+title: "About"
+output: html_document
+---
+
+## Purpose
+
+It is a well-known fact in the thrifting community that the bougier the neighborhood, the badder the donations, the better the finds. In other words, since most donation-based thrift stores like Goodwill and the Salvation Army source from the immediate surrounding areas, it logically follows that wealthier neighborhoods will tend to have nicer items. This (forthcoming) tool will allow users to optimize their thrift store selections by identifying which Goodwills near them are in neighborhoods with higher average real estate prices, which tends to correspond to household income. It will also (hopefully) do the same for store reviews, and identify any relationship between store rating and neighborhood income. My hypothesis is that stores in wealthier neighborhoods will tend to be more highly rated. 
+
+## Data
+I have gathered data on housing prices by neighborhood from Zillow, an online real estate website. I have found a data set from Agg data last updated last month of all Goodwill locations in the US, including their neighborhood, zip code, and store type. It is beautiful and clean and $99. I'm working on getting it for free, but if that fails, I plan to use a scraping tool to scrape the goodwill store locator (have found some tutorials for how to do this).
+
+I'm working on finding a way to scrape rating data without violating review site T&Cs :/ Little thorny ngl. If worse comes to worst, I will also take a few hours to just manually look up and input location ratings (which will give me a convenient excuse to simultaneously watch netflix and still feel productive #winwin)
+
+
+## Limitations
+
+*Running List*
+- missing goodwill locs
+- int'l locs
+
+
+*More Data*
+- https://public.opendatasoft.com/explore/dataset/us-zip-code-latitude-and-longitude/export/
+- https://github.com/cphalpert/census-regions/blob/master/us%20census%20bureau%20regions%20and%20divisions.csv
+- https://www.census.gov/data/datasets/2017/econ/cbp/2017-cbp.html
+
+
+

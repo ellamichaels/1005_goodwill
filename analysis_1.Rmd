@@ -1,0 +1,57 @@
+---
+title: "Analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(broom)
+
+good <- read.csv("final/good_q.csv")
+zillow_2020 <- read.csv("final/zillow_2020.csv")
+
+good_ratings <- read.csv("good_sampled.csv")
+
+```
+
+
+```{r}
+
+zillow_2020 %>%
+  summarize(min = min(x2020_01),
+            mean = mean(x2020_01),
+            q1 = quantile(x2020_01, c(.25)),
+            median = median(x2020_01),
+            q3 = quantile(x2020_01, c(.75)),
+            max = max(x2020_01))
+
+
+
+```
+
+
+```{r ratings plot}
+
+good_ratings %>%
+  drop_na(x2020_01, rating) %>%
+  ggplot(aes(y = rating, x = x2020_01)) +
+  xlim(0,1000000) +
+  geom_point() +
+  geom_smooth(method = "glm") +
+  theme_classic()
+
+```
+
+```{r}
+
+ratings_model <- lm(rating ~ x2020_01, data = good_ratings)
+
+ratings_model %>%
+  tidy(conf.int = TRUE)
+
+```
+
+
+

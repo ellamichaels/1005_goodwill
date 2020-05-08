@@ -1,0 +1,123 @@
+---
+title: "Search Test"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(ggmap)
+library(sf)
+library(janitor)
+library(lwgeom)
+library(gt)
+
+zip_latlon <- read.csv("geo_data/US Zip Codes from 2013 Government Data") %>%
+  clean_names()
+
+good <- read.csv("final/goodwill_regions.csv")
+
+```
+
+```{r}
+
+zlat <- zip_latlon %>%
+  filter(zip == 91316) %>%
+  pull(lat)
+
+zlng <- zip_latlon %>%
+  filter(zip == 91316) %>%
+  pull(lng)
+
+
+zlat
+zlng
+
+```
+
+
+```{r}
+
+
+
+## Create reference point data
+point <- data_frame(mylon = zlng, mylat = zlat) 
+# Specify the source of X and Y coordinates
+point_sf <- st_as_sf(point, coords = c("mylon", "mylat"), crs = 4326) 
+# Set the projection to EPSG 4326 (long-lat)
+
+## Create target point data
+target <- good %>%
+  filter(state == "CA") %>%
+  select(lat, lon) %>%
+  drop_na()
+
+# Specify the source of X and Y coordinates
+target_sf <- st_as_sf(target, coords = c("lon", "lat"), crs = 4326)
+# Set the projection to EPSG 4326 (long-lat)
+
+# Calculate the distance
+target_sf2 <- target_sf %>%
+  mutate(Dist = as.numeric(st_distance(point_sf, target_sf, by_element = TRUE))) %>%
+  # Filter the records with Dist <= 10 miles in meters
+  filter(Dist <= 16093.4)
+
+target_sf2 %>%
+  gt()
+
+```
+
+
+
+```{r app.r code (for reference - doesn't actually work smh)}
+
+ # search search baby
+    
+    output$goodwill_search <- render_gt(
+      
+      zlat <- zip_latlon %>%
+        filter(zip == input$zip_input2) %>%
+        pull(lat),
+      
+      zlng <- zip_latlon %>%
+        filter(zip == input$zip_input2) %>%
+        pull(lng),
+      
+      point <- data_frame(mylon = zlng, mylat = zlat), 
+      # Specify the source of X and Y coordinates
+      point_sf <- st_as_sf(point, coords = c("mylon", "mylat"), crs = 4326), 
+      # Set the crs to 4326 (denoting longitude + latitude)
+      
+      ## Create target point data
+      target <- good %>%
+        filter(state == input$state_input2) %>%
+        select(lat, lon) %>%
+        drop_na(),
+      
+      # Specify the source of X and Y coordinates
+      target_sf <- st_as_sf(target, coords = c("lon", "lat"), crs = 4326),
+      # Set the projection to EPSG 4326 (long-lat)
+      
+      # Calculate the distance
+      target_sf2 <- target_sf %>%
+        mutate(Dist = as.numeric(st_distance(point_sf, target_sf, by_element = TRUE))), 
+      
+      target_sf2 <- target_sf2 %>%
+        # Filter the records with Dist <= 10 miles in meters
+        filter(Dist <= 16093.4),
+      
+      expr = target_sf2
+      
+    )
+   
+
+```
+
+```{r another one}
+
+
+
+```
+
+
