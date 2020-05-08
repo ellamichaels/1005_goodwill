@@ -1,0 +1,52 @@
+---
+title: "Housing price vs. locations plot test"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, options(scipen = 999))
+
+library(tidyverse)
+
+good <- read.csv("final/good_q.csv")
+
+zillow <- read.csv("house_data/Zip_Zhvi_AllHomes.csv")
+zillow_2020 <- zillow %>%
+  clean_names() # make my life easier
+zillow_2020 <- zillow_2020 %>%
+  select(region_name, city, state, metro, county_name, x2020_01) %>% # select region information and house price information for the first period of 2020 dropping rows of data from preceding years and decades
+  rename(zip = region_name) %>% # rename region_name to to allow for joining with goodwill location datasets
+  mutate(zip = as.character(zip)) # convert zip to a character rather than an integer to match goodwill dataset for joining purposes
+
+
+```
+
+
+```{r Nationwide locations by housing price, bar}
+
+good %>%
+  ggplot(aes(x = x2020_01, fill = state)) +
+  geom_bar(binwidth = 20000) +
+  theme_classic() +
+  labs(x = "Housing Price in Location Zipcode",
+       y = "Number of Locations") +
+  xlim(0, 300000)
+
+zillow_2020 %>%
+  ggplot(aes(x = x2020_01, fill = state)) +
+  geom_bar(binwidth = 20000) +
+  theme_classic() +
+  labs(x = "Housing Price in Location Zipcode",
+       y = "Number of Locations") +
+  xlim(0, 300000)
+
+  
+
+```
+
+```{r, Locations v housing price}
+
+
+
+```
+

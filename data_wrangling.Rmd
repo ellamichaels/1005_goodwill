@@ -1,0 +1,169 @@
+---
+title: "Final Project"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(gt)
+library(janitor)
+
+
+# read in goodwill data
+g1 <- read.csv("goodwill_data/ella1.csv")
+g2 <- read.csv("goodwill_data/ella2.csv")
+g3 <- read.csv("goodwill_data/ella3.csv")
+g4 <- read.csv("goodwill_data/ella4.csv")
+g5 <- read.csv("goodwill_data/ella5.csv")
+g6 <- read.csv("goodwill_data/ella6.csv")
+g7 <- read.csv("goodwill_data/ella7.csv")
+g8 <- read.csv("goodwill_data/ella8.csv")
+
+# read in housing price data
+zillow <- read.csv("house_data/Zip_Zhvi_AllHomes.csv")
+zillow_2020 <- zillow %>%
+  clean_names() # make my life easier
+zillow_2020 <- zillow_2020 %>%
+  select(region_name, city, state, metro, county_name, x2020_01) %>% # select region information and house price information for the first period of 2020 dropping rows of data from preceding years and decades
+  rename(zip = region_name) %>% # rename region_name to to allow for joining with goodwill location datasets
+  mutate(zip = as.character(zip)) # convert zip to a character rather than an integer to match goodwill dataset for joining purposes
+
+#save zillow csv
+write.csv(zillow_2020, "goodwill_hunting/zillow_2020.csv")
+
+
+# read in region dataset
+census_regions <- read.csv("house_data/us census bureau regions and divisions.csv") %>%
+  clean_names() %>% #make life easier
+  rename(state_name = state) %>%
+  rename(state = state_code) # renaming state_code to state to facilitate joining with other datasets (and have to rename the variable currently called state first)
+
+```
+
+```{r loading data, getting zips}
+
+# function to create zip code column
+get_zip <- function(data) {
+  
+  data %>% 
+    rowwise() %>% # affect each row instead of just the first
+    mutate(zip = str_split_fixed(address, ", usa", 2)[1]) %>% # get first part of address before ", usa"
+    mutate(zip = str_extract(zip, "(?<= )[^ ]*$")) # get the last characters preceded by a space before the end of the string to get the zip
+  
+}
+
+# apply to each location dataset
+g1z <- get_zip(g1)
+g2z <- get_zip(g2)
+g3z <- get_zip(g3)
+g4z <- get_zip(g4)
+g5z <- get_zip(g5)
+g6z <- get_zip(g6)
+g7z <- get_zip(g7)
+g8z <- get_zip(g8)
+
+
+```
+
+
+```{r joining data}
+
+# joining house price + location data by zip code, left_join dropping irrelevant
+# house price info
+
+data1 <- left_join(g1z, zillow_2020, by = "zip")
+data2 <- left_join(g2z, zillow_2020, by = "zip")
+data3 <- left_join(g3z, zillow_2020, by = "zip")
+data4 <- left_join(g4z, zillow_2020, by = "zip")
+data5 <- left_join(g5z, zillow_2020, by = "zip")
+data6 <- left_join(g6z, zillow_2020, by = "zip")
+data7 <- left_join(g7z, zillow_2020, by = "zip")
+data8 <- left_join(g8z, zillow_2020, by = "zip")
+
+# joining all 8 into one dataframe
+good <- rbind(data1, data2, data3, data4, data5, data6, data7, data8)
+
+```
+
+
+```{r adding quartiles to dataset}
+
+# get first quartile of housing price
+q1 <- zillow_2020 %>%
+  pull(x2020_01) %>%
+  quantile(c(.25))
+
+# get second
+q2 <- zillow_2020 %>%
+  pull(x2020_01) %>%
+  quantile(c(.5))
+
+# get third
+q3 <- zillow_2020 %>%
+  pull(x2020_01) %>%
+  quantile(c(.75))
+
+# save housing price as a numeric variable so it can be manipulated later
+good <- good %>%
+  mutate(x2020_01 = as.numeric(x2020_01))
+
+# identify the housing price quartile of the zipcode each goodwill location is
+# in. save as a column so locations can be tagged and colored accordingly in
+# shinyapp
+good <- good %>%
+  mutate(quartile = case_when(x2020_01 <= q1 ~ "q1",
+                              q1 < x2020_01 & x2020_01 < q2 ~ "q2",
+                              q2 < x2020_01 & x2020_01 < q3 ~ "q3",
+                              TRUE ~ "q4"))
+
+# saving csv
+write.csv(good, "goodwill_hunting/good_q.csv")  
+
+```
+
+
+```{r adding regions to datasets}
+
+# joining zillow data with census regions by state to add the American region to group later
+zillow_regions <- left_join(zillow_2020, census_regions, by = "state") %>%
+  select(zip, state, state_name, city, x2020_01, region, division) # drop unnecessary variables
+
+# doing the same with goodwill to enable grouping
+goodwill_regions <- left_join(good, census_regions, by = "state") %>%
+  select(-metro, -county_name)
+
+# saving csvs
+write.csv(zillow_regions, "goodwill_hunting/zillow_regions.csv")
+write.csv(goodwill_regions, "goodwill_hunting/goodwill_regions.csv")
+
+
+
+```
+
+```{r loading zip code coordinates}
+
+# loading data
+zip_latlon <- read.csv("house_data/US Zip Codes from 2013 Government Data") %>%
+  clean_names()
+
+
+
+
+
+```
+
+
+```{r random sampling from good}
+
+set.seed(2)
+
+good_sampled <- good[sample(nrow(good), 500), ]
+
+good_sampled
+
+write.csv(good_sampled, "good_sampled.csv")
+
+```
+
