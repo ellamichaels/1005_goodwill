@@ -70,11 +70,16 @@ good_ratings %>%
 
 ```{r}
 
-ratings_model <- lm(rating ~ x2020_01, data = good_ratings)
+ratings_model <- lm(rating ~ zip_price, data = good_ratings)
 
 ratings_model %>%
-  tidy(conf.int = TRUE)
-
+  tidy(conf.int = TRUE) %>%
+  mutate(p.value = round(p.value, 2)) %>%
+  select(term, estimate, std.error, conf.low, conf.high, p.value) %>%
+  gt() %>%
+  fmt_scientific(columns = vars(estimate, std.error, conf.low, conf.high)) %>%
+  cols_label(term = "Variable", estimate = "Estimate", std.error = "Standard Error", 
+             conf.low = "Lower Bound", conf.high = "Upper Bound", p.value = "p value") 
 
 
 ```

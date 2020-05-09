@@ -5,10 +5,21 @@ output: html_document
 
 ## Purpose
 
-It is a well-known fact in the thrifting community that the bougier the neighborhood, the badder the donations, the better the finds. In other words, since most donation-based thrift stores like Goodwill and the Salvation Army source from the immediate surrounding areas, it logically follows that wealthier neighborhoods will tend to have nicer items. This (forthcoming) tool will allow users to optimize their thrift store selections by identifying which Goodwills near them are in neighborhoods with higher average real estate prices, which tends to correspond to household income. It will also (hopefully) do the same for store reviews, and identify any relationship between store rating and neighborhood income. My hypothesis is that stores in wealthier neighborhoods will tend to be more highly rated. 
+It is a well-known fact in the thrifting community that the bougier the neighborhood, the badder the donations, the better the finds. In other words, since most donation-based thrift stores like Goodwill and the Salvation Army source from the immediate surrounding areas, it logically follows that wealthier neighborhoods will tend to have nicer items. This tool allows users to optimize their thrift store selections by identifying which Goodwills near them are in neighborhoods with higher average real estate prices, which tends to correspond to household income. The "Goodwill Map" and "Search by State" tabs are two ways to do this. Originally, the intention was to build a search function that pulled all of the locations within a certain radius of an inputted zip code, and sort those locations by average zip code home value. I was able to build a proof-of-concept in an Rmd file, but have yet to figure out how to transfer it to a Shiny App. 
+
+This project also explores the relationship between a location's neighborhood income and its Yelp rating. Since Yelp does not allow scraping of its site, data on location ratings was collected by manually inputting star ratings of 500 randomly sampled locations. Those that did not have star ratings or were not listed on the Yelp site were omitted. An analysis of this sample did not reveal a statistically significant relationship between average zip code home value and Yelp rating, but it is still possible that there is a more significant relationship when examining locations within certain regions, rather than nationwide where for various reasons the distribution may appear more random (more detail in the *Analysis* tab)
+
 
 ## Data
-I have gathered data on housing prices by neighborhood from Zillow, an online real estate website. I have found a data set from Agg data last updated last month of all Goodwill locations in the US, including their neighborhood, zip code, and store type. It is beautiful and clean and $99. I'm working on getting it for free, but if that fails, I plan to use a scraping tool to scrape the goodwill store locator (have found some tutorials for how to do this).
+Data on average zip code home values was sourced from ",a("Zillow", href = "https://www.zillow.com/research/data/"),". Note that for all zip codes that began with zero, the Zillow dataset dropped the first digit which complicated the process of joining data sets by the zip column. 
+
+Goodwill location data was scraped from ",a("the Goodwill Store Locator", href = "https://www.goodwill.org/locator/"),". Note that 500 locations are omitted from this project. There actually does exist a cleaned, premade ",a("data set", href = "https://www.aggdata.com/aggdata/complete-list-goodwill-industries-locations")," of all Goodwill locations in the US, including their neighborhood, zip code, and store type. It is $99. So that's a no. 
+
+I also used a list of zip code coordinates from ",a("opendatasoft", href = "https://public.opendatasoft.com/explore/dataset/us-zip-code-latitude-and-longitude/export/")," and a list of states by US Census region from a lovely guy called Chris Halpert's ,"a("GitHub", href = "https://github.com/cphalpert/census-regions/blob/master/us%20census%20bureau%20regions%20and%20divisions.csv"),".
+
+Finally, data on Yelp reviews was manually pulled from ",a("Yelp.com", href = "yelp.com"),".
+
+
 
 I'm working on finding a way to scrape rating data without violating review site T&Cs :/ Little thorny ngl. If worse comes to worst, I will also take a few hours to just manually look up and input location ratings (which will give me a convenient excuse to simultaneously watch netflix and still feel productive #winwin)
 
