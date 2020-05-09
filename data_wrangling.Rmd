@@ -167,3 +167,17 @@ write.csv(good_sampled, "good_sampled.csv")
 
 ```
 
+```{r adding regions to rating data bc i forgot to include it lmfao}
+
+ratings <- read.csv("goodwill_hunting/good_sampled.csv")
+
+regions_zip <- goodwill_regions %>%
+  select(zip, region)
+
+goodwill_ratings <- inner_join(ratings, regions_zip, by = "zip") %>%
+  distinct()
+
+write.csv(goodwill_ratings, "goodwill_hunting/goodwill_ratings.csv")
+
+```
+

@@ -35,7 +35,7 @@ zillow <- read.csv("zillow_regions.csv")
 
 
 
-# Define UI for application that draws a histogram
+# Define UI for application 
 ui <- fluidPage(
     
     # set project title
@@ -52,28 +52,24 @@ ui <- fluidPage(
                                                                                                      "q4")),
                                  leafletOutput("goodwill_map", height=500))),                                  
                
-               # TAB: MAP - SEARCH
-               
-               tabPanel(("Map - Search"),
-                        
-                        mainPanel(textInput("zip_input2", "Input Zip Code"),
-                                  textInput("state_input2", "Input State Code"),
-                                  leafletOutput("goodwill_map2", height = 500)),
-                        sidebarPanel(dataTableOutput("goodwill_search"))
-                        
-               ),
                
                # TAB: STATE BY STATE
                
-               tabPanel("By State",
+               tabPanel("Search By State",
                         
-                        mainPanel(textInput("state_input3", "Input State Code"))),
+                        mainPanel(textInput("state_input3", "Input State Code"),
+                                  gt_output("by_state"))),
                
                
                # TAB: PLOTS
                tabPanel("Analysis",
                         tabsetPanel(
-                            tabPanel("Yelp Analysis"),
+                            tabPanel("Yelp Analysis",
+                                     
+                                     mainPanel(textInput("state_input_yelp", "Input State Code", value = "USA"),
+                                               plotlyOutput("yelp_plot"))
+                                     
+                                     ),
                             tabPanel("Housing Price Analysis",
                                      
                                      fillPage( 
@@ -103,7 +99,19 @@ ui <- fluidPage(
                         tags$div("Introduction"),
                         h2("Data Sources"),
                         tags$div("Zillow, Goodwill (scraped locations), Region Data, Zip code coordinates,
-                      Yelp (manual sample scrape, tbd)"))))
+                      Yelp (manual sample scrape, tbd)")),
+               
+               # TAB: MAP - SEARCH
+               
+               tabPanel(("Map - Search"),
+                        
+                        mainPanel(textInput("zip_input2", "Input Zip Code"),
+                                  textInput("state_input2", "Input State Code"),
+                                  leafletOutput("goodwill_map2", height = 500)),
+                        sidebarPanel(dataTableOutput("goodwill_search")))
+               ))
+
+
 
 
 
@@ -250,10 +258,42 @@ server <- function(input, output) {
     
     # State by State
     
-    output$by_state <- render_gt({
+    output$by_state <- render_gt(
         
+        if(input$state_input3 == "") {
+            
+            good_gt <- good %>%
+                arrange(desc(x2020_01)) %>%
+                select(address, state, city, zip, x2020_01) %>%
+                slice(1:15)
+            
+            good_gt <- tibble::rowid_to_column(good_gt, "Rank")
+
+            good_gt %>%
+                gt() %>%
+                cols_label(address = "Address",
+                           state = "State",
+                           city = "City",
+                           zip = "Zip Code",
+                           x2020_01 = "Average House Price in Zip Code")
+            
+        }
         
-        
+        else {
+            good_gt <- good %>%
+                filter(state == input$state_input3) %>%
+                arrange(desc(x2020_01)) %>%
+                select(address, state, city, zip, x2020_01)
+            
+            good_gt <- tibble::rowid_to_column(good_gt, "Rank")
+            
+            good_gt %>%
+                gt() %>%
+                cols_label(address = "Address",
+                           state = "State",
+                           city = "City",
+                           zip = "Zip Code",
+                           x2020_01 = "Average House Price in Zip Code")
     })
     
     
@@ -358,6 +398,46 @@ server <- function(input, output) {
                        max = "Maximum") %>%
             tab_header(title = "Summary Statistics: Average Home Prices in Nationwide Goodwill Zipcodes")
     )
+    
+    
+    # Yelp plots
+    
+    output$yelp_plot <- renderPlotly({
+        
+        if(input$state_input_yelp == "" | input$state_input_yelp == "USA") {
+            
+            goodwill_ratings %>%
+                drop_na(x2020_01, rating) %>%
+                ggplot(aes(y = rating, x = x2020_01, color = region)) +
+                xlim(0,1000000) +
+                geom_point() +
+                geom_smooth(method = "glm", level = 0, aes(group = 1), color = "black") +
+                geom_smooth(level = 0, aes(group = 1), color = "black") +
+                theme_classic() +
+                labs(x = "Average Housing Price in Store Zip Code",
+                     y = "Yelp Star Rating",
+                     title = "Relationship Between Neighborhood Housing Price and Yelp Star Rating",
+                     color = "Region")
+            
+        }
+        
+        else {
+            
+            goodwill_ratings %>%
+                drop_na(x2020_01, rating) %>%
+                filter(state == input$state_input_yelp) %>%
+                ggplot(aes(y = rating, x = x2020_01)) +
+                xlim(0,1000000) +
+                geom_point(color = "blue") +
+                geom_smooth(method = "glm", level = 0, aes(group = 1), color = "black") +
+                theme_classic() +
+                labs(x = "Average Housing Price in Store Zip Code",
+                     y = "Yelp Star Rating",
+                     title = "Relationship Between Neighborhood Housing Price and Yelp Star Rating",
+                     color = "Region")
+        }
+        
+    })
     
     
 }

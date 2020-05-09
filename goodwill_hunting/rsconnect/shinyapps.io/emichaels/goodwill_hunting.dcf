@@ -1,0 +1,12 @@
+name: goodwill_hunting
+title: goodwill_hunting
+username:
+account: emichaels
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2269472
+bundleId: 3122906
+url: https://emichaels.shinyapps.io/goodwill_hunting/
+when: 1588986096.86147
+asMultiple: FALSE
+asStatic: FALSE

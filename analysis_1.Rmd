@@ -9,10 +9,10 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(broom)
 
-good <- read.csv("final/good_q.csv")
-zillow_2020 <- read.csv("final/zillow_2020.csv")
+good <- read.csv("goodwill_hunting/good_q.csv")
+zillow_2020 <- read.csv("goodwill_hunting/zillow_2020.csv")
 
-good_ratings <- read.csv("good_sampled.csv")
+good_ratings <- read.csv("goodwill_hunting/good_sampled.csv")
 
 ```
 
@@ -34,9 +34,32 @@ zillow_2020 %>%
 
 ```{r ratings plot}
 
+goodwill_ratings <- read.csv("goodwill_hunting/goodwill_ratings.csv")
+
+```
+
+
+```{r ratings plot}
+goodwill_ratings %>%
+  drop_na(x2020_01, rating) %>%
+  ggplot(aes(y = rating, x = x2020_01, color = region)) +
+  xlim(0,1000000) +
+  geom_point() +
+  geom_smooth(method = "glm", level = 0, aes(group = 1), color = "black") +
+  geom_smooth(level = 0, aes(group = 1), color = "black") +
+  theme_classic() +
+  labs(x = "Average Housing Price in Store Zip Code",
+       y = "Yelp Star Rating",
+       title = "Relationship Between Neighborhood Housing Price and Yelp Star Rating",
+       color = "Region")
+
+```
+
+```{r plot with colors}
+
 good_ratings %>%
   drop_na(x2020_01, rating) %>%
-  ggplot(aes(y = rating, x = x2020_01)) +
+  ggplot(aes(y = rating, x = x2020_01, color = quartile)) +
   xlim(0,1000000) +
   geom_point() +
   geom_smooth(method = "glm") +
@@ -44,12 +67,15 @@ good_ratings %>%
 
 ```
 
+
 ```{r}
 
 ratings_model <- lm(rating ~ x2020_01, data = good_ratings)
 
 ratings_model %>%
   tidy(conf.int = TRUE)
+
+
 
 ```
 
